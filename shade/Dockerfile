@@ -1,17 +1,17 @@
 # ---------------------------------
-# Image: taccsciapps/jupyteruser-tc
+# Image: taccsciapps/jupyteruser-shade
 # ---------------------------------
-# The user notebook image for the TACC DesignSage JupyterHub.
+# The user notebook image for the DARPA Shade JupyterHub.
 #
 # ------------------
 # Building the image
 # ------------------
 # To build this image, simply change into this directory and issue:
-# docker build -t taccsciapps/jupyteruser-ds:<some_tag> .
+# docker build -t taccsciapps/jupyteruser-shade:<some_tag> .
 #
 # Tags follow semantic versioning based on the CHANGELOG. When building new versions, always start with a release
 # candidate for the image tag; for example:
-# docker build -t taccsciapps/jupyteruser-ds:1.1.0-rc1 .
+# docker build -t taccsciapps/jupyteruser-shade:1.1.0 .
 #
 # ---------------
 # Running Locally
@@ -19,8 +19,8 @@
 # After building a release candidate, run it locally to test out your changes.
 # This image is built to run on the JupyterHub. In order to run it locally, you need to provide a config file and a
 # separate command. For example, change into this directory and run:
-# docker run --rm -p 8888:8888 -v $(pwd)/jupyter-notebook-localconf.py:/home/jupyter/.jupyter/jupyter_notebook_config.py taccsciapps/jupyteruser-ds start-notebook.sh
-# Note than an example of a jupyter-notebook-localconf.py file is provided in this directory.
+# docker run --rm -p 8888:8888 -v $(pwd)/jupyter-notebook-localconf.py:/home/jupyter/.jupyter/jupyter_notebook_config.py taccsciapps/jupyteruser-shade start-notebook.sh
+# Note than an example of a jupyter-notebook-localconf.py file is not currently provided in this directory.
 
 FROM taccsciapps/jupyteruser-base:0.1.9
 
@@ -29,7 +29,7 @@ USER root
 # record version in /etc - image_version is injected by build_jupyteruser.sh
 ###################################################################
 ARG image_version=test
-# RUN echo "${image_version}" > /etc/jupyteruser-ds-release
+# RUN echo "${image_version}" > /etc/jupyteruser-shade-release
 # RUN chmod a+r /etc/jupyteruser-base-release
 ###################################################################
 
