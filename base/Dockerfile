@@ -1,50 +1,92 @@
-# ---------------------------------
-# Image: taccsciapps/jupyteruser-tc
-# ---------------------------------
-# The user notebook image for the TACC DesignSage JupyterHub.
-#
-# ------------------
-# Building the image
-# ------------------
-# To build this image, simply change into this directory and issue:
-# docker build -t taccsciapps/jupyteruser-ds:<some_tag> .
-#
-# Tags follow semantic versioning based on the CHANGELOG. When building new versions, always start with a release
-# candidate for the image tag; for example:
-# docker build -t taccsciapps/jupyteruser-ds:1.1.0-rc1 .
-#
-# ---------------
-# Running Locally
-# ---------------
-# After building a release candidate, run it locally to test out your changes.
-# This image is built to run on the JupyterHub. In order to run it locally, you need to provide a config file and a
-# separate command. For example, change into this directory and run:
-# docker run --rm -p 8888:8888 -v $(pwd)/jupyter-notebook-localconf.py:/home/jupyter/.jupyter/jupyter_notebook_config.py taccsciapps/jupyteruser-ds start-notebook.sh
-# Note than an example of a jupyter-notebook-localconf.py file is provided in this directory.
+# Image: taccsciapps/jupyteruser-base
 
-FROM taccsciapps/jupyteruser-base:0.1.9
+# Use jupyter/base-notebook image see:
+# https://github.com/jupyter/docker-stacks/tree/master/base-notebook
+FROM jupyter/base-notebook:latest
 
 USER root
-###################################################################
-# record version in /etc - image_version is injected by build_jupyteruser.sh
-###################################################################
-ARG image_version=test
-# RUN echo "${image_version}" > /etc/jupyteruser-ds-release
-# RUN chmod a+r /etc/jupyteruser-base-release
-###################################################################
+
+# Install bare essentials to make the image usable.
+# This list is kept short on purpose to keep the image light and portable.
+# Future packages should be added only if they are deemed essential for the community.
+# Following best practices apt-get-related commands should not be split.
+RUN apt-get update \
+ && apt-get install --yes --quiet --no-install-recommends \
+    build-essential \
+    emacs-nox \
+    vim-tiny \
+    nano \
+    jed \
+    unzip \
+    git \
+    inkscape \
+    openssh-client \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR ${HOME}
+
+RUN touch ${HOME}/.hushlogin
+
+# Install Julia kernel.
+RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-1.7.1-linux-x86_64.tar.gz \
+ && tar zxf julia-1.7.1-linux-x86_64.tar.gz \
+ && mv julia-1.7.1 .julia \
+ && export PATH="$PATH:/$HOME/.julia/bin" \
+ && echo 'using Pkg; Pkg.add("IJulia");' > install_script.jl \
+ && julia install_script.jl \
+ && rm install_script.jl \
+ && rm julia-1.7.1-linux-x86_64.tar.gz
+
+# Install R kernel from pre-built binary.
+RUN apt-get update \
+ && apt-get install --yes --quiet --no-install-recommends \
+    curl \
+    gdebi-core \
+ && export R_VERSION=4.0.5 \
+ && curl -O https://cdn.rstudio.com/r/ubuntu-2004/pkgs/r-${R_VERSION}_1_amd64.deb \
+ && gdebi --non-interactive --quiet r-${R_VERSION}_1_amd64.deb\
+ && /opt/R/${R_VERSION}/bin/R --version \
+ && ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R \
+ && ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript \
+ && apt-get install --yes --quiet --no-install-recommends \
+    libzmq3-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    jupyter-core \
+    jupyter-client \
+ && echo "install.packages(c('repr', 'IRdisplay', 'IRkernel'), type = 'source', repos = 'http://cran.us.r-project.org');IRkernel::installspec(user = FALSE)" > install_script.r \
+ && Rscript install_script.r \
+ && jupyter labextension install @techrah/text-shortcuts \
+ && rm install_script.r \
+ && rm r-4.0.5_1_amd64.deb
+
+# Python requirements.
+RUN mkdir ${HOME}/.python
+COPY requirements.txt ${HOME}/.python/requirements.txt
+RUN conda install -y nb_conda_kernels && \
+    python -m pip install -r ${HOME}/.python/requirements.txt --no-cache-dir && \
+    python -m pip freeze > ${HOME}/.python/pip_freeze.txt
+
+# todo --- look into why we're doing this?
+RUN jupyter kernelspec uninstall python3 -y
 
 
-ADD requirements.txt /requirements.txt
+# The notebook is run by the TACC userid, not jupyter,
+# so permissions need to be open
+# TODO (jpv): Prevent blind application of permission.
+RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME} && \
+	 chmod 777 ${HOME} && \
+	 find ${HOME} -type f -exec chmod 666 {} \; && \
+	 find ${HOME} -type d -exec chmod 777 {} \; && \
+    chmod -R a+rwx $HOME/.julia && \
+    chmod -R a+rwx /opt/R && \
+    chmod -R a+rwx /opt/conda
 
-RUN pip install -r /requirements.txt
+# Always terinate with user (i.e., non-root) permissions.
+USER ${NB_USER}
 
-#RUN python -m spacy download en_core_web_sm
-#RUN python -m spacy download en_core_web_md
-RUN python -m spacy download en_core_web_lg
-
-RUN pip install jupyter_plotly_dash \
-    && pip install dash_daq \
-    && pip install nbgitpuller \
-    && pip install tensorflow \
-    && pip install torch \
-    && pip install keras
+# Image metadata
+ENV IMAGE_NAME="taccsciapps/jupyteruser-base"
+LABEL image_name="jpvantasel/${IMAGE_NAME}"
+LABEL image_name_alt="taccsciapps/${IMAGE_NAME}"
