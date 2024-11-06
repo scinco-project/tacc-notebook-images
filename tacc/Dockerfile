@@ -22,7 +22,7 @@
 # docker run --rm -p 8888:8888 -v $(pwd)/jupyter-notebook-localconf.py:/home/jupyter/.jupyter/jupyter_notebook_config.py taccsciapps/jupyteruser-ds start-notebook.sh
 # Note than an example of a jupyter-notebook-localconf.py file is provided in this directory.
 
-FROM taccsciapps/jupyteruser-base:0.1.9
+FROM taccsciapps/jupyteruser-base:0.1.11
 
 USER root
 ###################################################################
@@ -48,3 +48,4 @@ RUN pip install jupyter_plotly_dash \
     && pip install tensorflow \
     && pip install torch \
     && pip install keras
+COPY jupyter_notebook_config.py ${HOME}/.jupyter/jupyter_notebook_config.py

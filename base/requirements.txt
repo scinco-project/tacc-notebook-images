@@ -78,7 +78,7 @@ networkx==2.4
 nltk==3.4.5
 notebook==6.0.2
 numpy==1.17.4
-packaging==19.2
+packaging==20.0
 pandas==0.25.3
 pandocfilters==1.4.2
 panel==0.6.4

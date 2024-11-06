@@ -46,5 +46,8 @@ RUN pip install jupyter_plotly_dash \
     && pip install dash_daq \
     && pip install nbgitpuller \
     && pip install tensorflow \
-    && pip install torch \
     && pip install keras
+
+RUN chmod 777 /opt/conda
+
+COPY jupyter_notebook_config.py ${HOME}/.jupyter/jupyter_notebook_config.py

@@ -1,0 +1,8 @@
+scikit-image
+matplotlib
+pyvista
+ipykernel
+quantimpy
+porespy
+trimesh
+ipywidgets
