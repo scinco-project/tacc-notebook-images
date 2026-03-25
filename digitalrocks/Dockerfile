@@ -28,9 +28,6 @@ RUN python -m pip install -r ${HOME}/.python/requirements.txt --no-cache-dir && 
 RUN pip uninstall -y scipy scikit-learn
 RUN pip install --no-binary scipy scikit-learn
 
-RUN pip uninstall -y numpy
-RUN pip install numpy==1.26.4
-
 COPY jupyter_notebook_config.py ${HOME}/.jupyter/jupyter_notebook_config.py
 
 RUN chown -R jovyan ${HOME} && \

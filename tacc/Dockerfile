@@ -28,7 +28,7 @@ USER root
 ###################################################################
 # record version in /etc - image_version is injected by build_jupyteruser.sh
 ###################################################################
-ARG image_version=test
+# ARG image_version=test
 # RUN echo "${image_version}" > /etc/jupyteruser-ds-release
 # RUN chmod a+r /etc/jupyteruser-base-release
 ###################################################################

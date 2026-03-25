@@ -1,6 +1,8 @@
+numpy
 scikit-image
+dpm_tools
 matplotlib
-pyvista
+pyvista[all]
 ipykernel
 quantimpy
 porespy
