@@ -214,7 +214,7 @@
 
 ## The default URL to redirect to from `/`
 #  Default: '/tree'
-# c.NotebookApp.default_url = '/tree'
+c.NotebookApp.default_url = '/lab'
 
 ## Disable cross-site-request-forgery protection
 #  
